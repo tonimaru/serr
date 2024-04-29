@@ -5,27 +5,27 @@ import (
 	"fmt"
 )
 
-type wrapped struct {
+type serr struct {
 	err error
 	st  *stackTrace
 }
 
-var _ error = (*wrapped)(nil)
-var _ StackTracer = (*wrapped)(nil)
+var _ error = (*serr)(nil)
+var _ StackTracer = (*serr)(nil)
 
-func (w *wrapped) Error() string {
+func (w *serr) Error() string {
 	return w.err.Error()
 }
 
-func (w *wrapped) StackTrace() *stackTrace {
+func (w *serr) StackTrace() *stackTrace {
 	return w.st
 }
 
-func (w *wrapped) Unwrap() error {
+func (w *serr) Unwrap() error {
 	return w.err
 }
 
-func (w *wrapped) Is(err error) bool {
+func (w *serr) Is(err error) bool {
 	return errors.Is(w.err, err)
 }
 
@@ -41,20 +41,12 @@ func Wrap(err error) error {
 	if err == nil {
 		return nil
 	}
-	var e *wrapped
+	var e *serr
 	if errors.As(err, &e) {
 		return err
 	}
-	return &wrapped{
+	return &serr{
 		err: err,
 		st:  callers(),
 	}
-}
-
-func StackTrace(err error) (*stackTrace, bool) {
-	var st StackTracer
-	if errors.As(err, &st) {
-		return st.StackTrace(), true
-	}
-	return nil, false
 }

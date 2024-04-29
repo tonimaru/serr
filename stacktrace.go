@@ -1,6 +1,7 @@
 package serr
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"runtime"
@@ -44,4 +45,12 @@ func (s *stackTrace) String() string {
 	var sb strings.Builder
 	s.format(&sb, 'v')
 	return sb.String()
+}
+
+func StackTrace(err error) (*stackTrace, bool) {
+	var st StackTracer
+	if errors.As(err, &st) {
+		return st.StackTrace(), true
+	}
+	return nil, false
 }
